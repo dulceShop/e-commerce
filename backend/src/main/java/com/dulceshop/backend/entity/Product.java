@@ -47,6 +47,9 @@ public class Product {
     private Category category;
     @OneToMany(mappedBy = "product",cascade=CascadeType.ALL, orphanRemoval=true)
     private List<ProductImage> images =new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
     @PrePersist 
     void onCreate(){
         this.createdAt=LocalDateTime.now();
@@ -55,6 +58,7 @@ public class Product {
         images.add(image);
         image.setProduct(this);
     }
+
 
 
     
