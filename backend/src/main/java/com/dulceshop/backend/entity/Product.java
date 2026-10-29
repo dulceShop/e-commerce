@@ -50,6 +50,7 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
+    
     @PrePersist 
     void onCreate(){
         this.createdAt=LocalDateTime.now();
