@@ -1,5 +1,6 @@
 package com.dulceshop.backend.controller;
-
+import com.dulceshop.backend.dto.LoginRequest;
+import com.dulceshop.backend.dto.AuthResponse;
 import com.dulceshop.backend.dto.RegisterRequest;
 import com.dulceshop.backend.dto.UserResponse;
 import com.dulceshop.backend.entity.User;
@@ -25,5 +26,9 @@ public class AuthController {
     public UserResponse register(@Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request);
         return UserResponse.from(user);
+    }
+        @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }
