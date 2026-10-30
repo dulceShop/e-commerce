@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/api/seller/products")
@@ -35,5 +38,23 @@ public class SellerProductController {
                                                   @RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "12") int size) {
         return sellerProductService.findMine(authentication.getName(), page, size);
+    }
+        @PutMapping("/{id}")
+    public ProductResponse update(Authentication authentication,
+                                  @PathVariable Long id,
+                                  @Valid @RequestBody ProductRequest request) {
+        return sellerProductService.update(
+                authentication.getName(), isAdmin(authentication), id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deactivate(Authentication authentication, @PathVariable Long id) {
+        sellerProductService.deactivate(authentication.getName(), isAdmin(authentication), id);
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

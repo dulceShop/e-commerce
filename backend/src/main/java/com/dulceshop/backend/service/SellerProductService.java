@@ -1,5 +1,4 @@
 package com.dulceshop.backend.service;
-
 import com.dulceshop.backend.dto.PageResponse;
 import com.dulceshop.backend.dto.ProductRequest;
 import com.dulceshop.backend.dto.ProductResponse;
@@ -7,6 +6,7 @@ import com.dulceshop.backend.entity.Category;
 import com.dulceshop.backend.entity.Product;
 import com.dulceshop.backend.entity.User;
 import com.dulceshop.backend.exception.CategoryNotFoundException;
+import com.dulceshop.backend.exception.ProductNotFoundException;
 import com.dulceshop.backend.repository.CategoryRepository;
 import com.dulceshop.backend.repository.ProductRepository;
 import com.dulceshop.backend.repository.UserRepository;
@@ -15,7 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.Optional;
+import com.dulceshop.backend.exception.ProductNotFoundException;
 @Service
 @RequiredArgsConstructor
 public class SellerProductService {
@@ -56,6 +57,40 @@ public class SellerProductService {
 
         return PageResponse.from(
                 productRepository.findBySellerId(seller.getId(), pageable).map(ProductResponse::from));
+    }
+        @Transactional
+    public ProductResponse update(String email, boolean admin, Long id, ProductRequest request) {
+        Product product = findOwned(email, admin, id);
+
+        product.setName(request.name().trim());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setStockQuantity(request.stockQuantity());
+        if (request.lowStockThreshold() != null) {
+            product.setLowStockThreshold(request.lowStockThreshold());
+        }
+        if (request.active() != null) {
+            product.setActive(request.active());
+        }
+        product.setCategory(findCategory(request.categoryId()));
+
+        return ProductResponse.from(product);
+    }
+
+    @Transactional
+    public void deactivate(String email, boolean admin, Long id) {
+        findOwned(email, admin, id).setActive(false);
+    }
+
+    private Product findOwned(String email, boolean admin, Long id) {
+        if (admin) {
+            return productRepository.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException(id));
+        }
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + email));
+        return productRepository.findByIdAndSellerId(id, seller.getId())
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     private Category findCategory(Long categoryId) {
