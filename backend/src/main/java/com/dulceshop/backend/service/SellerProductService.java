@@ -1,0 +1,68 @@
+package com.dulceshop.backend.service;
+
+import com.dulceshop.backend.dto.PageResponse;
+import com.dulceshop.backend.dto.ProductRequest;
+import com.dulceshop.backend.dto.ProductResponse;
+import com.dulceshop.backend.entity.Category;
+import com.dulceshop.backend.entity.Product;
+import com.dulceshop.backend.entity.User;
+import com.dulceshop.backend.exception.CategoryNotFoundException;
+import com.dulceshop.backend.repository.CategoryRepository;
+import com.dulceshop.backend.repository.ProductRepository;
+import com.dulceshop.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class SellerProductService {
+
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public ProductResponse create(String sellerEmail, ProductRequest request) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + sellerEmail));
+
+        Product product = new Product();
+        product.setSeller(seller);
+        product.setName(request.name().trim());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setStockQuantity(request.stockQuantity());
+        if (request.lowStockThreshold() != null) {
+            product.setLowStockThreshold(request.lowStockThreshold());
+        }
+        if (request.active() != null) {
+            product.setActive(request.active());
+        }
+        product.setCategory(findCategory(request.categoryId()));
+
+        return ProductResponse.from(productRepository.save(product));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> findMine(String sellerEmail, int page, int size) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + sellerEmail));
+
+        var pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return PageResponse.from(
+                productRepository.findBySellerId(seller.getId(), pageable).map(ProductResponse::from));
+    }
+
+    private Category findCategory(Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+    }
+}
