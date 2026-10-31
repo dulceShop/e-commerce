@@ -24,6 +24,7 @@ public class SellerProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+        private final StockAlertService stockAlertService;
 
     @Transactional
     public ProductResponse create(String sellerEmail, ProductRequest request) {
@@ -42,9 +43,9 @@ public class SellerProductService {
         if (request.active() != null) {
             product.setActive(request.active());
         }
-        product.setCategory(findCategory(request.categoryId()));
-
-        return ProductResponse.from(productRepository.save(product));
+                Product saved = productRepository.save(product);
+        stockAlertService.checkStock(saved);
+        return ProductResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -73,10 +74,16 @@ public class SellerProductService {
             product.setActive(request.active());
         }
         product.setCategory(findCategory(request.categoryId()));
-
+stockAlertService.checkStock(product);
         return ProductResponse.from(product);
     }
-
+    @Transactional
+    public ProductResponse updateStock(String email, boolean admin, Long id, int stockQuantity) {
+        Product product = findOwned(email, admin, id);
+        product.setStockQuantity(stockQuantity);
+        stockAlertService.checkStock(product);
+        return ProductResponse.from(product);
+    }
     @Transactional
     public void deactivate(String email, boolean admin, Long id) {
         findOwned(email, admin, id).setActive(false);

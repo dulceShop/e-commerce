@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-
+import com.dulceshop.backend.dto.StockUpdateRequest;
+import org.springframework.web.bind.annotation.PatchMapping;
 @RestController
 @RequestMapping("/api/seller/products")
 @RequiredArgsConstructor
@@ -56,5 +57,12 @@ public class SellerProductController {
     private boolean isAdmin(Authentication authentication) {
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+    }
+        @PatchMapping("/{id}/stock")
+    public ProductResponse updateStock(Authentication authentication,
+                                       @PathVariable Long id,
+                                       @Valid @RequestBody StockUpdateRequest request) {
+        return sellerProductService.updateStock(
+                authentication.getName(), isAdmin(authentication), id, request.stockQuantity());
     }
 }
