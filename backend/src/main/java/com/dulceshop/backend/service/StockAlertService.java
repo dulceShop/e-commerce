@@ -7,7 +7,7 @@ import com.dulceshop.backend.repository.StockAlertRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.dulceshop.backend.exception.AlertNotFoundException;
 import java.util.List;
 
 @Service
@@ -38,5 +38,12 @@ public class StockAlertService {
         return stockAlertRepository.findByProductSellerEmailOrderByCreatedAtDesc(sellerEmail).stream()
                 .map(StockAlertResponse::from)
                 .toList();
+    }
+        @Transactional
+    public StockAlertResponse markAsRead(String sellerEmail, Long alertId) {
+        StockAlert alert = stockAlertRepository.findByIdAndProductSellerEmail(alertId, sellerEmail)
+                .orElseThrow(() -> new AlertNotFoundException(alertId));
+        alert.setRead(true);
+        return StockAlertResponse.from(alert);
     }
 }
