@@ -89,7 +89,7 @@ stockAlertService.checkStock(product);
         findOwned(email, admin, id).setActive(false);
     }
 
-    private Product findOwned(String email, boolean admin, Long id) {
+    public Product findOwned(String email, boolean admin, Long id) {
         if (admin) {
             return productRepository.findById(id)
                     .orElseThrow(() -> new ProductNotFoundException(id));

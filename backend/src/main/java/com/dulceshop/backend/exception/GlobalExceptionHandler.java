@@ -54,4 +54,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAlertNotFound(AlertNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
+        @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleImageNotFound(ImageNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
 }
