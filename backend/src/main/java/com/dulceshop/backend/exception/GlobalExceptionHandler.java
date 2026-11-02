@@ -1,6 +1,5 @@
 package com.dulceshop.backend.exception;
 
-import com.dulceshop.backend.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,47 +14,97 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyUsed(
+            EmailAlreadyUsedException ex
+    ) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> fieldErrors = new LinkedHashMap<>();
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error -> fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
-        return build(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
-    }
-
-    private ResponseEntity<ErrorResponse> build(HttpStatus status, String message,
-                                                Map<String, String> fieldErrors) {
-        ErrorResponse body = new ErrorResponse(
-                LocalDateTime.now(), status.value(), status.getReasonPhrase(), message, fieldErrors);
-        return ResponseEntity.status(status).body(body);
-    }
-        @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(
+            InvalidCredentialsException ex
+    ) {
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
     }
-        @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleProductNotFound(ProductNotFoundException ex) {
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFound(
+            ProductNotFoundException ex
+    ) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryNotFound(
+            CategoryNotFoundException ex
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(AlertNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAlertNotFound(
+            AlertNotFoundException ex
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleImageNotFound(
+            ImageNotFoundException ex
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ProfileNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProfileNotFound(
+            ProfileNotFoundException ex
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(SellerProfileAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleProfileAlreadyExists(
+            SellerProfileAlreadyExistsException ex
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            BadRequestException ex
+    ) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
-        @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            MethodArgumentNotValidException ex
+    ) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.putIfAbsent(
+                        error.getField(),
+                        error.getDefaultMessage()
+                )
+        );
+
+        return build(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
     }
-        @ExceptionHandler(AlertNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAlertNotFound(AlertNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
-    }
-        @ExceptionHandler(ImageNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleImageNotFound(ImageNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+
+    private ResponseEntity<ErrorResponse> build(
+            HttpStatus status,
+            String message,
+            Map<String, String> fieldErrors
+    ) {
+        ErrorResponse body = new ErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                fieldErrors
+        );
+
+        return ResponseEntity.status(status).body(body);
     }
 }

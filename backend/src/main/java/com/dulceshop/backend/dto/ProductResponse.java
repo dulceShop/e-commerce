@@ -19,21 +19,24 @@ public record ProductResponse(
         String mainImageUrl,
         LocalDateTime createdAt
 ) {
-    public static ProductResponse from(Product product) {
-        var category = product.getCategory();
+    public static ProductResponse from(Product product){
+        return from(product, product.getSeller().getFirstName());
 
+    }
+    public static ProductResponse from(Product product,String sellerName){
+        var category = product.getCategory();
         return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getStockQuantity(),
-                product.getStockQuantity() > 0,
-                category != null ? category.getId() : null,
-                category != null ? category.getName() : null,
-                product.getSeller().getFirstName(),
-                mainImageUrl(product),
-                product.getCreatedAt()
+            product.getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getPrice(),
+            product.getStockQuantity(),
+            product.getStockQuantity() > 0,
+            category != null ? category.getId() : null,
+            category != null ? category.getName() : null,
+            sellerName,
+            mainImageUrl(product),
+            product.getCreatedAt()
         );
     }
 
