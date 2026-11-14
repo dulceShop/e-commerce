@@ -55,6 +55,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleReviewNotFound(
+            ReviewNotFoundException ex
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleReviewAlreadyExists(
+            ReviewAlreadyExistsException ex
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(ProfileNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleProfileNotFound(
             ProfileNotFoundException ex
