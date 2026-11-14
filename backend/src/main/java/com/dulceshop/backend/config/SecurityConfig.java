@@ -74,6 +74,11 @@ public class SecurityConfig {
                                 "/api/products/**",
                                 "/api/categories/**"
                         ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/products/*/reviews"
+                        ).hasRole("CUSTOMER")
+                        .requestMatchers("/api/reviews/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.POST, "/api/seller-profiles").authenticated()
 .requestMatchers(HttpMethod.GET, "/api/seller-profiles/me").authenticated()
 .requestMatchers("/api/seller-profiles/**").hasRole("ADMIN")
