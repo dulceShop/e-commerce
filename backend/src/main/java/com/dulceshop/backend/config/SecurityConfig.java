@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -40,8 +42,6 @@ public class SecurityConfig {
                 "Authorization", "Content-Type"
         ));
         configuration.setExposedHeaders(List.of("Authorization"));
-
-        // Le projet utilise un token JWT Bearer, pas des cookies.
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
@@ -66,6 +66,11 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
@@ -79,11 +84,20 @@ public class SecurityConfig {
                                 "/api/products/*/reviews"
                         ).hasRole("CUSTOMER")
                         .requestMatchers("/api/reviews/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.POST, "/api/seller-profiles").authenticated()
-.requestMatchers(HttpMethod.GET, "/api/seller-profiles/me").authenticated()
-.requestMatchers("/api/seller-profiles/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/seller-profiles"
+                        ).authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/seller-profiles/me"
+                        ).authenticated()
+                        .requestMatchers("/api/seller-profiles/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")
+                        .requestMatchers("/api/seller/**").hasAnyRole(
+                                "SELLER",
+                                "ADMIN"
+                        )
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
