@@ -103,6 +103,8 @@ public class SecurityConfig {
                                 "SELLER",
                                 "ADMIN"
                         )
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+.requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
